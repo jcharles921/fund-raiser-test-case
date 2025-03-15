@@ -21,7 +21,7 @@ public class Transaction {
     @Column(nullable = false)
     private LocalDateTime transactionDate;
     
-    @OneToOne(mappedBy = "transaction", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "transaction")
     private Donation donation;
 
     public Transaction() {}
@@ -44,4 +44,9 @@ public class Transaction {
 
     public LocalDateTime getTransactionDate() { return transactionDate; }
     public void setTransactionDate(LocalDateTime transactionDate) { this.transactionDate = transactionDate; }
+
+	public void setDonation(Donation newDonation) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -24,8 +24,8 @@ public class Donation {
     @JoinColumn(name = "campaign_id", nullable = false)
     private Campaign campaign;
 
-    @OneToOne
-    @JoinColumn(name = "transaction_id", nullable = false)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "transaction_id")
     private Transaction transaction;
 
     @ManyToMany(mappedBy = "donations")

@@ -12,18 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Controller class for managing Category-related operations
- * Handles category creation, updating, viewing, and deletion
- */
+
 public class CategoryController {
 
-    /**
-     * Create a new category
-     *
-     * @param name Category name
-     * @return Optional containing the created category if successful, empty if creation failed
-     */
     public Optional<Category> createCategory(String name) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -44,12 +35,6 @@ public class CategoryController {
         }
     }
 
-    /**
-     * Get a category by ID
-     *
-     * @param categoryId ID of the category to retrieve
-     * @return Optional containing the category if found, empty otherwise
-     */
     public Optional<Category> getCategoryById(Long categoryId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Category category = session.get(Category.class, categoryId);
@@ -61,11 +46,6 @@ public class CategoryController {
         }
     }
 
-    /**
-     * Get all categories
-     *
-     * @return List of all categories
-     */
     public List<Category> getAllCategories() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("FROM Category", Category.class).list();
@@ -76,13 +56,6 @@ public class CategoryController {
         }
     }
 
-    /**
-     * Update a category
-     *
-     * @param categoryId ID of the category to update
-     * @param name New name (or null to keep existing)
-     * @return true if update successful, false otherwise
-     */
     public boolean updateCategory(Long categoryId, String name) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -111,12 +84,6 @@ public class CategoryController {
         }
     }
 
-    /**
-     * Delete a category
-     *
-     * @param categoryId ID of the category to delete
-     * @return true if deletion successful, false otherwise
-     */
     public boolean deleteCategory(Long categoryId) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

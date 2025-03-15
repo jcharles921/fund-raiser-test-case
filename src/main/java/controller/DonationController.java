@@ -15,107 +15,104 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Controller class for managing Donation-related operations
- * Handles donation creation, viewing, and processing
- */
+
 public class DonationController {
 
-    /**
-     * Create a new donation
-     *
-     * @param amount Donation amount
-     * @param donor User who made the donation
-     * @param campaign Campaign to which the donation is made
-     * @param transaction Transaction associated with the donation
-     * @return Optional containing the created donation if successful, empty if creation failed
-     */
-    public Optional<Donation> createDonation(BigDecimal amount, User donor, Campaign campaign, Transaction transaction) {
-        org.hibernate.Transaction dbTransaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            dbTransaction = session.beginTransaction();
+	public Optional<Donation> createDonation(BigDecimal amount, User donor, Campaign campaign, Transaction transaction) {
+	    Session session = null;
+	    org.hibernate.Transaction dbTransaction = null;
+	    try {
+	        session = HibernateUtil.getSessionFactory().openSession();
+	        dbTransaction = session.beginTransaction();
+	        
+	        
+	        User managedDonor = session.merge(donor);
+	        Campaign managedCampaign = session.merge(campaign);
+	        Transaction managedTransaction = session.merge(transaction);
+	        
+	        Donation newDonation = new Donation(amount, managedDonor, managedCampaign, managedTransaction);
+	        managedTransaction.setDonation(newDonation); // Set the bidirectional relationship
+	        
+	        session.persist(newDonation);
+	        dbTransaction.commit();
+	        return Optional.of(newDonation);
+	    } catch (Exception e) {
+	        if (dbTransaction != null && dbTransaction.isActive()) {
+	            try {
+	                dbTransaction.rollback();
+	            } catch (Exception rollbackEx) {
+	                System.err.println("Error during transaction rollback: " + rollbackEx.getMessage());
+	            }
+	        }
+	        System.err.println("Error creating donation: " + e.getMessage());
+	        e.printStackTrace();
+	        return Optional.empty();
+	    } finally {
+	        if (session != null && session.isOpen()) {
+	            session.close();
+	        }
+	    }
+	}
+	public Optional<Donation> getDonationById(Long donationId) {
+	    Session session = null;
+	    try {
+	        session = HibernateUtil.getSessionFactory().openSession();
+	        Donation donation = session.get(Donation.class, donationId);
+	        return Optional.ofNullable(donation);
+	    } catch (Exception e) {
+	        System.err.println("Error retrieving donation: " + e.getMessage());
+	        e.printStackTrace();
+	        return Optional.empty();
+	    } finally {
+	        if (session != null && session.isOpen()) {
+	            session.close();
+	        }
+	    }
+	}
 
-            Donation newDonation = new Donation(amount, donor, campaign, transaction);
-            session.persist(newDonation);
-
-            dbTransaction.commit();
-            return Optional.of(newDonation);
-        } catch (Exception e) {
-            if (dbTransaction != null) {
-                dbTransaction.rollback();
-            }
-            System.err.println("Error creating donation: " + e.getMessage());
-            e.printStackTrace();
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * Get a donation by ID
-     *
-     * @param donationId ID of the donation to retrieve
-     * @return Optional containing the donation if found, empty otherwise
-     */
-    public Optional<Donation> getDonationById(Long donationId) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Donation donation = session.get(Donation.class, donationId);
-            return Optional.ofNullable(donation);
-        } catch (Exception e) {
-            System.err.println("Error retrieving donation: " + e.getMessage());
-            e.printStackTrace();
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * Get all donations
-     *
-     * @return List of all donations
-     */
-    public List<Donation> getAllDonations() {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM Donation", Donation.class).list();
-        } catch (Exception e) {
-            System.err.println("Error retrieving donations: " + e.getMessage());
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
-    }
-
-    /**
-     * Delete a donation
-     *
-     * @param donationId ID of the donation to delete
-     * @return true if deletion successful, false otherwise
-     */
-    public boolean deleteDonation(Long donationId) {
-        org.hibernate.Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
-
-            Donation donation = session.get(Donation.class, donationId);
-            if (donation == null) {
-                System.err.println("Donation not found with ID: " + donationId);
-                return false;
-            }
-
-            session.remove(donation);
-            transaction.commit();
-            return true;
-        } catch (PersistenceException e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            System.err.println("Cannot delete donation - may have associated records: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            System.err.println("Error deleting donation: " + e.getMessage());
-            e.printStackTrace();
+public boolean deleteDonation(Long donationId) {
+    Session session = null;
+    org.hibernate.Transaction transaction = null;
+    try {
+        session = HibernateUtil.getSessionFactory().openSession();
+        transaction = session.beginTransaction();
+        
+        Donation donation = session.get(Donation.class, donationId);
+        if (donation == null) {
+            System.err.println("Donation not found with ID: " + donationId);
+            transaction.rollback();
             return false;
         }
+        
+        session.remove(donation);
+        transaction.commit();
+        return true;
+    } catch (PersistenceException e) {
+        if (transaction != null && transaction.isActive()) {
+            try {
+                transaction.rollback();
+            } catch (Exception rollbackEx) {
+                System.err.println("Error during transaction rollback: " + rollbackEx.getMessage());
+            }
+        }
+        System.err.println("Cannot delete donation - may have associated records: " + e.getMessage());
+        e.printStackTrace();
+        return false;
+    } catch (Exception e) {
+        if (transaction != null && transaction.isActive()) {
+            try {
+                transaction.rollback();
+            } catch (Exception rollbackEx) {
+                System.err.println("Error during transaction rollback: " + rollbackEx.getMessage());
+            }
+        }
+        System.err.println("Error deleting donation: " + e.getMessage());
+        e.printStackTrace();
+        return false;
+    } finally {
+        if (session != null && session.isOpen()) {
+            session.close();
+        }
     }
+}
 }

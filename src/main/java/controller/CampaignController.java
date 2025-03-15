@@ -15,22 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Controller class for managing Campaign-related operations
- * Handles campaign creation, updating, viewing, and deletion
- */
+
 public class CampaignController {
 
-    /**
-     * Create a new campaign
-     *
-     * @param title Campaign title
-     * @param description Campaign description
-     * @param goalAmount Campaign goal amount
-     * @param createdBy User who created the campaign
-     * @param category Campaign category
-     * @return Optional containing the created campaign if successful, empty if creation failed
-     */
     public Optional<Campaign> createCampaign(String title, String description, BigDecimal goalAmount, User createdBy, Category category) {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

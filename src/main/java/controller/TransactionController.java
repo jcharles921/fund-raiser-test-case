@@ -13,20 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Controller class for managing Transaction-related operations
- * Handles transaction creation, viewing, and processing
- */
+
 public class TransactionController {
 
-    /**
-     * Create a new transaction
-     *
-     * @param amount Transaction amount
-     * @param paymentMethod Payment method used
-     * @param transactionDate Date and time of the transaction
-     * @return Optional containing the created transaction if successful, empty if creation failed
-     */
+  
     public Optional<Transaction> createTransaction(BigDecimal amount, String paymentMethod, LocalDateTime transactionDate) {
         org.hibernate.Transaction dbTransaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
@@ -47,12 +37,7 @@ public class TransactionController {
         }
     }
 
-    /**
-     * Get a transaction by ID
-     *
-     * @param transactionId ID of the transaction to retrieve
-     * @return Optional containing the transaction if found, empty otherwise
-     */
+ 
     public Optional<Transaction> getTransactionById(Long transactionId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             Transaction transaction = session.get(Transaction.class, transactionId);
@@ -64,11 +49,7 @@ public class TransactionController {
         }
     }
 
-    /**
-     * Get all transactions
-     *
-     * @return List of all transactions
-     */
+  
     public List<Transaction> getAllTransactions() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("FROM Transaction", Transaction.class).list();
@@ -79,12 +60,7 @@ public class TransactionController {
         }
     }
 
-    /**
-     * Delete a transaction
-     *
-     * @param transactionId ID of the transaction to delete
-     * @return true if deletion successful, false otherwise
-     */
+
     public boolean deleteTransaction(Long transactionId) {
         org.hibernate.Transaction dbTransaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
